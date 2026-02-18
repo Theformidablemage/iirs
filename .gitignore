@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.pyc
+
+# Environments
+env/
+venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Data folders
+data/
+datasets/
+outputs/
+
+# Large scientific files
+*.npy
+*.npz
+*.h5
+*.tif
+*.img
+*.qub
+
+# Model weights
+*.pt
+*.pth
+
+# OS files
+.DS_Store
+Thumbs.db
