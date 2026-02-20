@@ -18,8 +18,8 @@ def oat(path):
     #exit()
     with open(path,"r") as f:
         for line in f:
-            #if not line.startswith("ORBTATTD 12114 62820"):
-            #   continue
+            if not line.startswith("ORBTATTD"):
+               continue
             #print(len(line), repr(line[:20]))
             
             sa=float(line[398:412].strip())
@@ -33,21 +33,35 @@ def oat(path):
     return 0
 
 '''
+    -ALL WRONG-
     For SPM file:
     Phase angle 142:151
     Sun Azimuth 160:169
     Sun Elevation 169:178
+    -RIGHT-
+
 '''
 def spm(path):
-
+    count=0
     with open(path, "r") as f:
         for line in f:
-            print(repr(line), len(line))
-            p=float(line[142:151].strip())
-            a=float(line[160:169].strip())
-            e=float(line[169:178].strip())
-            print(f"{p}\t\t{a}\t\t{e}")
+            if not line.startswith("ORBTATTD"):
+                continue
+            #print(repr(line), len(line))
+            #p=line[142:]
+            #for i in p:
+             #   if i.isdigit():
+              #      break
+               # count+=1
+            #print(count)
+            p=float(line[142:158].strip())
+            a=float(line[174:190].strip())
+            e=float(line[190:206].strip())
+            i=90-e
+
+            print(f"{p}\t\t{a}\t\t{e}\t\t{i}")
 
     return 0
 
 spm(ps)
+#oat(path)
