@@ -1,9 +1,9 @@
-import os
+import os,csv
 os.system('cls')
 
 path=r"D:\ch2_iir_nci_20210720T2333026105_d_img_d32\miscellaneous\calibrated\20210720\ch2_iir_nci_20210720T2333026105_d_img_d32.oat"
 ps=r"D:\ch2_iir_nci_20210720T2333026105_d_img_d32\miscellaneous\calibrated\20210720\ch2_iir_nci_20210720T2333026105_d_img_d32.spm"
-
+o=r"D:\ch2_iir_nci_20210720T2333026105_d_img_d32\spm_angles.txt"
 '''
 For OAT file
 Solar azimuth 398:412
@@ -41,12 +41,13 @@ def oat(path):
     -RIGHT-
 
 '''
-def spm(path):
+def spm(path,o):
     count=0
-    with open(path, "r") as f:
+    with open(path, "r") as f, open(o,"w") as out:
+        out.write("Phase\t\tAzimuth\t\tElevation\t\tIncidence\n")
         for line in f:
-            if not line.startswith("ORBTATTD"):
-                continue
+            #if not line.startswith("ORBTATTD"):
+                #continue
             #print(repr(line), len(line))
             #p=line[142:]
             #for i in p:
@@ -54,14 +55,21 @@ def spm(path):
               #      break
                # count+=1
             #print(count)
+            
             p=float(line[142:158].strip())
             a=float(line[174:190].strip())
             e=float(line[190:206].strip())
             i=90-e
-
-            print(f"{p}\t\t{a}\t\t{e}\t\t{i}")
-
+            out.write(f"{p}\t\t{a}\t\t{e}\t\t{i}\n")
+            #print(f"{p}\t\t{a}\t\t{e}\t\t{i}")
+        print("Done")
     return 0
 
-spm(ps)
+spm(ps,o)
 #oat(path)
+'''
+length=os.path.getsize(ps)
+print(length)
+rows=length//249
+print(rows)
+'''
