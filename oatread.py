@@ -1,5 +1,5 @@
 import os,csv, numpy as np 
-os.system('cls')
+#os.system('cls')
 
 widths=[
     8,6,4,28,
@@ -63,9 +63,9 @@ header = [
 
 
 
-path=r"D:\ch2_iir_nci_20210720T2333026105_d_img_d32\miscellaneous\calibrated\20210720\ch2_iir_nci_20210720T2333026105_d_img_d32.oat"
-out=r"D:\ch2_iir_nci_20210720T2333026105_d_img_d32\oat1.csv"
-'''
+path=r"/home/megha/arshveer/ch2_iir_nci_20250529T1233369467_d_img_d18/miscellaneous/calibrated/20250529/ch2_iir_nci_20250529T1233369467_d_img_d18.oat"
+out=r"/home/megha/arshveer/ch2_iir_nci_20250529T1233369467_d_img_d18/miscellaneous/oat.csv"
+
 def parse_width(line,w):
     fields=[]
     s=0
@@ -80,14 +80,63 @@ def parse_width(line,w):
         s=e
     return fields
 
-with open(path,"r") as f, open(out,"w", newline="") as out:
+with open(path,"r") as f, open(out,"a+", newline="") as out:
     writer=csv.writer(out)
     writer.writerow(header)
     for line in f:
         parsed=parse_width(line,widths)
         writer.writerow(parsed)
+#move pointer to start
+    out.seek(0)
+    reader=csv.reader(out)
+    header=next(reader)
+    rows=list(reader)
+    data=rows[1:]
+
+    header.append("Sensor_Azimuth")
+    header[28]="lq2"
+    header[29]="lq3"
+    header[30]="lq4"
+    q1=header.index("Transformation Quaternion for Lunar Fixed IAU frame Q1")
+    lat=header.index("Latitude_deg")
+    lon=header.index("Longitude_deg")
+    x=header.index("Sat_Pos_X_km")
+    y=header.index("Sat_Pos_Y_km")
+    z=header.index("Sat_Pos_Z_km")
+
+    quart=[]
+    la=[]
+    lo=[]
+    pos=[]
+
+    for row in reader:
+        la.append(
+            float(row[lat])
+        )
+        lo.append(
+            float(row[lon])
+        )
+        pos.append([
+            float(row[x]),
+            float(row[y]),
+            float(row[z])
+        ])
+        quart.append([
+            float(row[q1]),
+            float(row[28]),
+            float(row[29]),
+            float(row[30])
+        ])
+
+la=np.array(la)
+print(la.shape)
+lo=np.array(lo)
+pos=np.array(pos)
+quart=np.array(quart)
+print(quart.shape)
+print(pos.shape)
 print("OAT converted to CSV")
-'''
+
 # ==========================================================
 # CONSTANTS
 # ==========================================================
@@ -101,11 +150,13 @@ def quat_rotate(q, v):
     """
     Rotate vector v using quaternion q = [qx, qy, qz, qw]
     """
+    #now q is of size (N,4) and v of (N,3)
+
     q = np.asarray(q, dtype=float)
     v = np.asarray(v, dtype=float)
 
-    q_xyz = q[:3]
-    qw = q[3]
+    q_xyz = q[:,:3]
+    qw = q[:,3]
 
     t = 2.0 * np.cross(q_xyz, v)
     v_rot = v + qw * t + np.cross(q_xyz, t)
@@ -126,8 +177,8 @@ def latlon_to_cartesian(lat_deg, lon_deg, R=LUNAR_RADIUS_KM):
     x = R * np.cos(lat) * np.cos(lon)
     y = R * np.cos(lat) * np.sin(lon)
     z = R * np.sin(lat)
-
-    return np.array([x, y, z])
+#return statement should give array of N,3 - each row should be a vector from center of moon
+    return np.column_stack(x, y, z)
 
 
 # ==========================================================
@@ -141,28 +192,31 @@ def sensor_azimuth(sc_pos_lf, ground_lat, ground_lon):
     rp = latlon_to_cartesian(ground_lat, ground_lon)
 
     # Look vector (spacecraft -> ground)
-    v = rp - sc_pos_lf
-    v = v / np.linalg.norm(v)
+    v = rp - sc_pos_lf #both of same size (N,3)
+    #norm should be computed for each row differently not globally
+    v = v / np.linalg.norm(v,axis=1,keepdims=True)
 
     lat = np.deg2rad(ground_lat)
     lon = np.deg2rad(ground_lon)
 
     # Local East & North unit vectors
-    east = np.array([
+    #make east and north vectors of size (N,3) as well
+    east = np.column_stack(
         -np.sin(lon),
          np.cos(lon),
          0.0
-    ])
+    )
 
-    north = np.array([
+    north = np.column_stack(
         -np.sin(lat) * np.cos(lon),
         -np.sin(lat) * np.sin(lon),
          np.cos(lat)
-    ])
+    )
 
     # Projections
-    vE = np.dot(v, east)
-    vN = np.dot(v, north)
+    #matrix mul wont work for both vectors of size (N,3)
+    vE = np.sum(v*east,axis=1)
+    vN = np.sum(v*north,axis=1)
 
     az = np.degrees(np.arctan2(vE, vN))
     return (az + 360.0) % 360.0
@@ -216,53 +270,25 @@ if __name__ == "__main__":
     print(f"Sensor azimuth (deg) : {az:.3f}")
 '''
 
+   
 
-with open(out,"r") as f:
-    reader=csv.reader(f)
-    header=next(reader)
+o=r"/home/megha/arshveer/ch2_iir_nci_20250529T1233369467_d_img_d18/miscellaneous/oat_updated.csv"
 
-    header.append("Sensor_Azimuth")
-    header[28]="lq2"
-    header[29]="lq3"
-    header[30]="lq4"
-    q1=header.index("Transformation Quaternion for Lunar Fixed IAU frame Q1")
-    lat=header.index("Latitude_deg")
-    lon=header.index("Longitude_deg")
-    x=header.index("Sat_Pos_X_km")
-    y=header.index("Sat_Pos_Y_km")
-    z=header.index("Sat_Pos_Z_km")
+sc=quat_rotate(quart,pos)
+#sc of size (N,3)
 
-    quart=[]
-    la=[]
-    lo=[]
-    pos=[]
+se_az=sensor_azimuth(sc,la,lo)
+data=np.column_stack(data,se_az)
+with open(o, "w", newline="") as f:
+    writer=csv.writer(f)
+    writer.writerow(header)
+    writer.writerows(data)
 
-    for row in reader:
-        la.append(
-            float(row[lat])
-        )
-        lo.append(
-            float(row[lon])
-        )
-        pos.append([
-            float(row[x]),
-            float(row[y]),
-            float(row[z])
-        ])
-        quart.append([
-            float(row[q1]),
-            float(row[28]),
-            float(row[29]),
-            float(row[30])
-        ])
 
-la=np.array(la)
-print(la.shape)
-lo=np.array(lo)
-pos=np.array(pos)
-quart=np.array(quart)
-print(quart.shape)
-print(pos.shape)
+
+
+
+
 
 
 

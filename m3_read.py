@@ -42,12 +42,12 @@ import matplotlib.pyplot as plt
 iron=r"/home/megha/172.16.9.46:8000/Global20ppd_MLR_LPGRS_Fe.mat"
 al=r"/home/megha/172.16.9.46:8000/Global20ppd_MLR_CLASS_Al.mat"
 mg=r"/home/megha/172.16.9.46:8000/Global20ppd_MLR_CLASS_Mg.mat"
-data=loadmat(al)
+data=loadmat(iron)
 print(data.keys())
-Fe=data['Al']
+Fe=data['Fe']
 print(Fe.dtype)
 print(Fe.shape)
 
-plt.imshow(Fe*100,cmap="jet", vmin=0, vmax=15)
+plt.imshow(Fe,cmap="jet", vmin=0, vmax=13)
 plt.colorbar()
 plt.show()
