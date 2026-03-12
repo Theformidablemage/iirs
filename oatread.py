@@ -91,7 +91,7 @@ with open(path,"r") as f, open(out,"a+", newline="") as out:
     reader=csv.reader(out)
     header=next(reader)
     rows=list(reader)
-    data=rows[1:]
+    data=rows
 
     header.append("Sensor_Azimuth")
     header[28]="lq2"
@@ -108,8 +108,8 @@ with open(path,"r") as f, open(out,"a+", newline="") as out:
     la=[]
     lo=[]
     pos=[]
-
-    for row in reader:
+#reader->rows
+    for row in rows:
         la.append(
             float(row[lat])
         )
@@ -201,17 +201,17 @@ def sensor_azimuth(sc_pos_lf, ground_lat, ground_lon):
 
     # Local East & North unit vectors
     #make east and north vectors of size (N,3) as well
-    east = np.column_stack(
+    east = np.column_stack((
         -np.sin(lon),
          np.cos(lon),
-         0.0
-    )
+         np.zeros_like(lon)
+    ))
 
-    north = np.column_stack(
+    north = np.column_stack((
         -np.sin(lat) * np.cos(lon),
         -np.sin(lat) * np.sin(lon),
          np.cos(lat)
-    )
+    ))
 
     # Projections
     #matrix mul wont work for both vectors of size (N,3)
@@ -278,7 +278,7 @@ sc=quat_rotate(quart,pos)
 #sc of size (N,3)
 
 se_az=sensor_azimuth(sc,la,lo)
-data=np.column_stack(data,se_az)
+data=np.column_stack((data,se_az))
 with open(o, "w", newline="") as f:
     writer=csv.writer(f)
     writer.writerow(header)
