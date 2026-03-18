@@ -49,5 +49,6 @@ def interpolate_latlon(geometry_csv, lines, samples):
         (grid_lines, grid_samples),
         method="linear"
     )
+    print(lat_grid)
 
     return lat_grid, lon_grid

@@ -95,9 +95,9 @@ print(sen_az.shape)
 
 test=r"/home/megha/arshveer/ch2_iir_nci_20250529T1233369467_d_img_d18/miscellaneous/test.txt"
 with open(test,"w") as f:
-    for ang in sol_ze:
+    for ang in sen_az:
         f.write(f"{float(ang)}\n")
-    print("Done")
+    print("Done") 
 
 
     
