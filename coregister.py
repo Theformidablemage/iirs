@@ -10,8 +10,8 @@ def register_images(iirs_cube_path, dem_path):
     # =========================
     # LOAD IIRS DATA
     # =========================
-    xml=r"/home/megha/arshveer/ch2_iir_nci_20211218T0038037745_d_img_hw1/data/calibrated/20211218/ch2_iir_nci_20211218T0038037745_d_img_hw1.xml"
-    qub=r"/home/megha/arshveer/ch2_iir_nci_20211218T0038037745_d_img_hw1/data/calibrated/20211218/ch2_iir_nci_20211218T0038037745_d_img_hw1.qub"
+    xml=r"/home/megha/arshveer/ch2_iir_nci_20250529T1233369467_d_img_d18/data/calibrated/20250529/ch2_iir_nci_20250529T1233369467_d_img_d18.xml"
+    qub=r"/home/megha/arshveer/ch2_iir_nci_20250529T1233369467_d_img_d18/data/calibrated/20250529/ch2_iir_nci_20250529T1233369467_d_img_d18.qub"
     meta=parse_pds5_spectrum_xml(xml)
     cube=read_qub(qub,meta,skip_bands=0)
 
@@ -21,7 +21,7 @@ def register_images(iirs_cube_path, dem_path):
     print("reading done")
     
     wac=r"/home/megha/arshveer/Lunar_LRO_LROC-WAC_Mosaic_global_100m_June2013 (1).tif"
-    coord=r"/home/megha/arshveer/ch2_iir_nci_20211218T0038037745_d_img_hw1/geometry/calibrated/20211218/ch2_iir_nci_20211218T0038037745_g_grd_hw1.csv"
+    coord=r"/home/megha/arshveer/ch2_iir_nci_20250529T1233369467_d_img_d18/geometry/calibrated/20250529/ch2_iir_nci_20250529T1233369467_g_grd_d18.csv"
     
     # Load DEM (.tif)
     dem_norm = crop_dem(wac,coord)

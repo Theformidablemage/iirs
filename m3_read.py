@@ -39,9 +39,11 @@ with h5py.File(mat_file,'r') as f:
 from scipy.io import loadmat
 import matplotlib.pyplot as plt
 
+
 iron=r"/home/megha/172.16.9.46:8000/Global20ppd_MLR_LPGRS_Fe.mat"
 al=r"/home/megha/172.16.9.46:8000/Global20ppd_MLR_CLASS_Al.mat"
 mg=r"/home/megha/172.16.9.46:8000/Global20ppd_MLR_CLASS_Mg.mat"
+
 data=loadmat(iron)
 print(data.keys())
 Fe=data['Fe']
