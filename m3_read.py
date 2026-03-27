@@ -38,7 +38,7 @@ with h5py.File(mat_file,'r') as f:
 
 from scipy.io import loadmat
 import matplotlib.pyplot as plt
-
+import numpy as np
 
 iron=r"/home/megha/172.16.9.46:8000/Global20ppd_MLR_LPGRS_Fe.mat"
 al=r"/home/megha/172.16.9.46:8000/Global20ppd_MLR_CLASS_Al.mat"
@@ -49,7 +49,16 @@ print(data.keys())
 Fe=data['Fe']
 print(Fe.dtype)
 print(Fe.shape)
+#Fe*=100
+print(np.nanmin(Fe),np.nanmax(Fe))
 
-plt.imshow(Fe,cmap="jet", vmin=0, vmax=13)
+r,c=np.where(Fe>25)
+
+
+Fe[r,c]=np.nan
+
+
+
+plt.imshow(Fe,cmap="jet", vmin=0, vmax=14)
 plt.colorbar()
 plt.show()

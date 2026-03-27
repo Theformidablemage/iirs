@@ -21,7 +21,7 @@ def thermal_corrector_np(
     B,H,W=rad.shape
     rad[rad <= 0] = np.nan
 
-    wavelengths = wavelengths[77:-2] # (B,)
+    #wavelengths = wavelengths[77:-2] # (B,)
     wavelengths=wavelengths*1e-9
    
     # Thermal window (4.5–4.874 µm)
@@ -57,7 +57,7 @@ def thermal_corrector_np(
     #zero_count = np.sum(zero_mask, axis=(1, 2))
     nan_count = np.sum(nan_mask, axis=(1, 2))
 
-    band=idx+78
+    band=idx
 
     
     plt.figure()

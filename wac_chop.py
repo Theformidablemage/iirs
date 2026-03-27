@@ -133,4 +133,4 @@ ip=r"/home/megha/arshveer/iirs2.tif"
 ou=r"/home/megha/arshveer/iirs2_downsample.tif"
 
 downsample(ip,ou,tar=1500)
-        
+      
