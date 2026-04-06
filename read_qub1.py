@@ -89,7 +89,7 @@ def read_qub(qub_file,meta,skip_bands):
             cubes.append(cube_part)
     return np.concatenate(cubes,axis=0)
 
-
+'''
 s=[(28,34),(68,75),(161,256)]
 
 qub=r"/home/megha/arshveer/ch2_iir_nci_20211218T0038037745_d_img_hw1/data/calibrated/20211218/ch2_iir_nci_20211218T0038037745_d_img_hw1.qub"
@@ -98,4 +98,4 @@ meta=parse_xml(xml)
 cube=read_qub(qub,meta,s)
 print(cube.shape)
 
-
+'''
