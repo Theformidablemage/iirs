@@ -1,0 +1,135 @@
+from pathlib import Path
+import zipfile
+from geometry import interpolate_latlon
+from read_qub1 import parse_xml, read_qub
+import numpy as np
+import napari
+from chopping2 import chop
+
+source= Path('/home/megha/Downloads/iirs_strips')
+extract=Path('/home/megha/Downloads/iirs_strips/extracted')
+'''
+extract.mkdir(parents=True,exist_ok=True)
+
+for zip_path in source.glob('*.zip'):
+    output=extract/zip_path.stem
+    output.mkdir(exist_ok=True)
+    with zipfile.ZipFile(zip_path,'r') as file:
+        file.extractall(output)
+        print(f"Extracted:{zip_path.name}")
+'''
+strips=[d for d in extract.iterdir() if d.is_dir()]      
+
+def get_required_files(strip_path):
+    data=strip_path/"data"
+    geometry=strip_path/"geometry"
+    print(data)
+
+    if not data.exists() or not geometry.exists():
+        raise LookupError("Data or geometry do not exist")
+    xml=list(data.rglob('*.xml'))
+    qub=list(data.rglob('*.qub'))
+    geo=list(geometry.rglob('*.csv'))
+
+    return xml[0],qub[0],geo[0]
+
+
+wac=r'/home/megha/arshveer/Lunar_LRO_LROC-WAC_Mosaic_global_100m_June2013 (1).tif'
+
+for strip in strips:
+    files=get_required_files(strip)
+    xml,qub,geo=files
+    #print(xml)
+    meta=parse_xml(xml)
+    cube=read_qub(qub,meta,skip_bands=[(28,34),(68,75),(161,256)])
+    bands,lines,sample=cube.shape
+    lat,lon=interpolate_latlon(geo,lines,sample)
+    wac_norm=chop(cube,lat,lon,wac)
+    iirs_norm=cube[48,:,:]
+    '''
+    viewer=napari.Viewer()
+    print("Starting Viewer")
+    '''
+    #out=extract/f"{strip.name}_cube.npy"
+    #out.parent.mkdir(parents=True,exist_ok=True)
+    #np.save(out,cube)
+    '''
+    viewer.add_image(iirs_norm,name="IIRS image",colormap="terrain",opacity=1)
+    viewer.add_image(wac_norm,name="WAC",colormap="terrain",opacity=0.5)
+    viewer = napari.Viewer()
+    '''
+# -------------------------
+# ADD IMAGES
+# -------------------------
+    viewer=napari.Viewer()
+    viewer.add_image(iirs_norm, name="IIRS", colormap="terrain")
+    viewer.add_image(wac_norm, name="WAC", colormap="terrain", opacity=0.5)
+
+# -------------------------
+# ADD POINT LAYERS
+# -------------------------
+    pts_iirs = viewer.add_points(name="IIRS_points", face_color="red", size=8)
+    pts_wac = viewer.add_points(name="WAC_points", face_color="blue", size=8)
+    pts_iirs.mode = "add"
+    pts_wac.mode = "add"
+    print("\n👉 Instructions:")
+    print("1. Click crater in IIRS (red points)")
+    print("2. Click SAME crater in WAC (blue points)")
+    print("3. Check terminal for lat/lon shift\n")
+
+# -------------------------
+# COMPUTE SHIFT
+# -------------------------
+    def compute_shift(event):
+    # need at least one point in both
+        print("EVENt triggered")
+        if len(pts_iirs.data) == 0 or len(pts_wac.data) == 0:
+             return
+
+    # take latest points
+        r_iirs, c_iirs = pts_iirs.data[-1]
+        r_wac, c_wac = pts_wac.data[-1]
+
+        r_iirs, c_iirs = int(r_iirs), int(c_iirs)
+        r_wac, c_wac = int(r_wac), int(c_wac)
+
+    # -------------------------
+    # IIRS lat/lon
+    # -------------------------
+        if r_iirs >= lat.shape[0] or c_iirs >= lat.shape[1]:
+                print("IIRS click out of bounds")
+                return
+
+        if r_wac >= lat.shape[0] or c_wac >= lat.shape[1]:
+                 print("WAC click out of bounds")
+                 return
+
+        lat_iirs = lat[r_iirs, c_iirs]
+        lon_iirs = lon[r_iirs, c_iirs]
+
+        lat_wac = lat[r_wac, c_wac]
+        lon_wac = lon[r_wac, c_wac]
+
+    # -------------------------
+    # PRINT RESULTS
+    # -------------------------
+        print("\n New Point Pair")
+        print(f"IIRS Pixel: ({r_iirs}, {c_iirs})")
+        print(f"WAC  Pixel: ({r_wac}, {c_wac})")
+
+        print(f"IIRS → Lat: {lat_iirs:.6f}, Lon: {lon_iirs:.6f}")
+        print(f"WAC  → Lat: {lat_wac:.6f}, Lon: {lon_wac:.6f}")
+
+        print(f"shift Lat: {lat_iirs - lat_wac:.6f}")
+        print(f"shift Lon: {lon_iirs - lon_wac:.6f}")
+
+# -------------------------
+# CONNECT EVENTS
+# -------------------------
+    pts_iirs.events.data.connect(compute_shift)
+    pts_wac.events.data.connect(compute_shift)
+
+
+    napari.run()
+    del cube
+
