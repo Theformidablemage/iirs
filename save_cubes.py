@@ -5,6 +5,7 @@ from read_qub1 import parse_xml, read_qub
 import numpy as np
 import napari
 from chopping2 import chop
+from skimage.transform import ProjectiveTransform,warp
 
 source= Path('/home/megha/Downloads/iirs_strips')
 extract=Path('/home/megha/Downloads/iirs_strips/extracted')
@@ -33,10 +34,9 @@ def get_required_files(strip_path):
 
     return xml[0],qub[0],geo[0]
 
+def process_strips(strip):
 
-wac=r'/home/megha/arshveer/Lunar_LRO_LROC-WAC_Mosaic_global_100m_June2013 (1).tif'
-
-for strip in strips:
+    wac=r'/home/megha/arshveer/Lunar_LRO_LROC-WAC_Mosaic_global_100m_June2013 (1).tif'
     files=get_required_files(strip)
     xml,qub,geo=files
     #print(xml)
@@ -76,19 +76,33 @@ for strip in strips:
     print("1. Click crater in IIRS (red points)")
     print("2. Click SAME crater in WAC (blue points)")
     print("3. Check terminal for lat/lon shift\n")
-
+      
+    iirs_pts=[]
+    wac_pts=[]
+    last_idx=-1
 # -------------------------
-# COMPUTE SHIFT
+# COMPUTE SHIFT 
 # -------------------------
     def compute_shift(event):
     # need at least one point in both
+        nonlocal last_idx
         print("EVENt triggered")
         if len(pts_iirs.data) == 0 or len(pts_wac.data) == 0:
              return
 
     # take latest points
-        r_iirs, c_iirs = pts_iirs.data[-1]
-        r_wac, c_wac = pts_wac.data[-1]
+        #r_iirs, c_iirs = pts_iirs.data[-1]
+        #r_wac, c_wac = pts_wac.data[-1]
+
+        idx=len(pts_wac.data)-1
+        if idx==last_idx:
+             return
+        last_idx=idx
+        if idx>=len(pts_iirs.data):
+             print("Click iirs points")
+        r_iirs, c_iirs = pts_iirs.data[idx]
+        r_wac, c_wac = pts_wac.data[idx]
+
 
         r_iirs, c_iirs = int(r_iirs), int(c_iirs)
         r_wac, c_wac = int(r_wac), int(c_wac)
@@ -110,6 +124,8 @@ for strip in strips:
         lat_wac = lat[r_wac, c_wac]
         lon_wac = lon[r_wac, c_wac]
 
+
+
     # -------------------------
     # PRINT RESULTS
     # -------------------------
@@ -122,14 +138,53 @@ for strip in strips:
 
         print(f"shift Lat: {lat_iirs - lat_wac:.6f}")
         print(f"shift Lon: {lon_iirs - lon_wac:.6f}")
+        iirs_pts.append([r_iirs,c_iirs])
+        wac_pts.append([r_wac,c_wac])
 
 # -------------------------
 # CONNECT EVENTS
 # -------------------------
-    pts_iirs.events.data.connect(compute_shift)
+    #pts_iirs.events.data.connect(compute_shift)
     pts_wac.events.data.connect(compute_shift)
 
+    napari.run()
+
+    print("Now computing transform")
+    iirs_pts_ar=np.array(iirs_pts)
+    wac_pts_ar=np.array(wac_pts)
+
+    if len(iirs_pts_ar)<4:
+         raise ValueError("Points less than 4")
+    tform=ProjectiveTransform()
+    tform.estimate(iirs_pts_ar,wac_pts_ar)
+    print("Tranformation matrix:\n",tform.params)
+    h_out,w_out=wac_norm.shape()
+    co_cube=np.zeros((bands,h_out,w_out),dtype=np.float32)
+    #warping full cube
+
+    for b in range(bands):
+         co_cube[b]=warp(
+              cube[b],
+              inverse_map=tform.inverse,
+              output_shape=(h_out,w_out),
+              preserve_range=True
+         )
+
+    out_cube=extract/f"{strip.name}_aligned.npy"
+
+    np.save(out_cube,co_cube)
+    viewer=napari.Viewer()
+    viewer.add_image(wac_norm,name="WAC",colormap="terrain")
+    viewer.add_image(co_cube[48],name="Aligned IIRS",colormap="terrain")
 
     napari.run()
     del cube
+
+for strip in strips:
+    if strip.stem == "ch2_iir_nci_20250529T1233369467_d_img_d18":
+        continue
+    process_strips(strip)
+
+
+    
 

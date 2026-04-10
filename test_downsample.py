@@ -4,8 +4,8 @@ from rasterio.plot import show
 import numpy as np
 import napari
 
-iirs=r"/home/megha/arshveer/iirs1_downsample.tif"
-dem=r"/home/megha/arshveer/dem1_downsample.tif"
+iirs=r"/home/megha/arshveer/iirs3_downsample.tif"
+dem=r"/home/megha/arshveer/dem3_downsample.tif"
 
 i=tiff.imread(iirs)
 d=tiff.imread(dem)
