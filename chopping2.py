@@ -22,8 +22,11 @@ def chop(cube,lat,lon,wac):
             (rows>=0)&(rows<src.height)&
             (cols>=0)&(cols<src.width)
         )
+        #chopping larger wac to accomodate shift
+        
         dem_band=src.read(1)
         dem_resampled[valid]=dem_band[rows[valid],cols[valid]]
+        
         print("WAC shape: ",dem_resampled.shape)
     return dem_resampled
 

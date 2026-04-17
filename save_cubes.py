@@ -5,8 +5,9 @@ from read_qub1 import parse_xml, read_qub
 import numpy as np
 import napari
 from chopping2 import chop
-from skimage.transform import ProjectiveTransform,warp
-
+from skimage.transform import SimilarityTransform,warp
+import rasterio
+R=1737400
 source= Path('/home/megha/Downloads/iirs_strips')
 extract=Path('/home/megha/Downloads/iirs_strips/extracted')
 '''
@@ -46,6 +47,9 @@ def process_strips(strip):
     lat,lon=interpolate_latlon(geo,lines,sample)
     wac_norm=chop(cube,lat,lon,wac)
     iirs_norm=cube[48,:,:]
+
+    
+   
     '''
     viewer=napari.Viewer()
     print("Starting Viewer")
@@ -61,6 +65,7 @@ def process_strips(strip):
 # -------------------------
 # ADD IMAGES
 # -------------------------
+  
     viewer=napari.Viewer()
     viewer.add_image(iirs_norm, name="IIRS", colormap="terrain")
     viewer.add_image(wac_norm, name="WAC", colormap="terrain", opacity=0.5)
@@ -72,7 +77,7 @@ def process_strips(strip):
     pts_wac = viewer.add_points(name="WAC_points", face_color="blue", size=8)
     pts_iirs.mode = "add"
     pts_wac.mode = "add"
-    print("\n👉 Instructions:")
+    print("\n Instructions:")
     print("1. Click crater in IIRS (red points)")
     print("2. Click SAME crater in WAC (blue points)")
     print("3. Check terminal for lat/lon shift\n")
@@ -100,9 +105,10 @@ def process_strips(strip):
         last_idx=idx
         if idx>=len(pts_iirs.data):
              print("Click iirs points")
+             return
         r_iirs, c_iirs = pts_iirs.data[idx]
         r_wac, c_wac = pts_wac.data[idx]
-
+        print(f"Pairing index: {idx}")
 
         r_iirs, c_iirs = int(r_iirs), int(c_iirs)
         r_wac, c_wac = int(r_wac), int(c_wac)
@@ -121,9 +127,10 @@ def process_strips(strip):
         lat_iirs = lat[r_iirs, c_iirs]
         lon_iirs = lon[r_iirs, c_iirs]
 
-        lat_wac = lat[r_wac, c_wac]
+        lat_wac = lat[r_wac, c_wac] 
         lon_wac = lon[r_wac, c_wac]
-
+        
+      
 
 
     # -------------------------
@@ -138,8 +145,8 @@ def process_strips(strip):
 
         print(f"shift Lat: {lat_iirs - lat_wac:.6f}")
         print(f"shift Lon: {lon_iirs - lon_wac:.6f}")
-        iirs_pts.append([r_iirs,c_iirs])
-        wac_pts.append([r_wac,c_wac])
+        iirs_pts.append([c_iirs,r_iirs])
+        wac_pts.append([c_wac,r_wac])
 
 # -------------------------
 # CONNECT EVENTS
@@ -155,10 +162,10 @@ def process_strips(strip):
 
     if len(iirs_pts_ar)<4:
          raise ValueError("Points less than 4")
-    tform=ProjectiveTransform()
+    tform=SimilarityTransform()
     tform.estimate(iirs_pts_ar,wac_pts_ar)
     print("Tranformation matrix:\n",tform.params)
-    h_out,w_out=wac_norm.shape()
+    h_out,w_out=wac_norm.shape
     co_cube=np.zeros((bands,h_out,w_out),dtype=np.float32)
     #warping full cube
 
@@ -167,12 +174,36 @@ def process_strips(strip):
               cube[b],
               inverse_map=tform.inverse,
               output_shape=(h_out,w_out),
-              preserve_range=True
+              preserve_range=True,
+              cval=np.nan
          )
 
+    lat_new=warp(
+         lat,
+         inverse_map=tform.inverse,
+         output_shape=(h_out,w_out),
+         preserve_range=True,
+         cval=np.nan
+    )
+    lon_new=warp(
+         lon,
+         inverse_map=tform.inverse,
+         output_shape=(h_out,w_out),
+         preserve_range=True,
+         cval=np.nan
+    )
+    lat_lon=np.stack([lat_new,lon_new],axis=0)
+    print("Lat new:",lat_new[60,60])
+    print("Lon new:",lon_new[60,60])
+    print("lat:",lat_new[200,100])
+    print("lon:",lon_new[200,100])
+    
+   
     out_cube=extract/f"{strip.name}_aligned.npy"
+    out_coord=extract/f"{strip.name}_lat_lon.npy"
 
     np.save(out_cube,co_cube)
+    np.save(out_coord,lat_lon)
     viewer=napari.Viewer()
     viewer.add_image(wac_norm,name="WAC",colormap="terrain")
     viewer.add_image(co_cube[48],name="Aligned IIRS",colormap="terrain")
@@ -181,9 +212,9 @@ def process_strips(strip):
     del cube
 
 for strip in strips:
-    if strip.stem == "ch2_iir_nci_20250529T1233369467_d_img_d18":
-        continue
-    process_strips(strip)
+    if strip.stem == "ch2_iir_nci_20230701T1834098296_d_img_d32" or strip.stem == "ch2_iir_nci_20230707T2120194723_d_img_d32" :
+        #continue
+        process_strips(strip)
 
 
     
