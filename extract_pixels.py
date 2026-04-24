@@ -26,6 +26,7 @@ def extract_pairs_with_coords(
 
     flat_lat_list = []
     flat_lon_list = []
+    max_rug=50
 
     flat_indices = np.where(flat_mask)
 
@@ -45,12 +46,11 @@ def extract_pairs_with_coords(
         col_min = max(0, j - k)
         col_max = min(W, j + k + 1)
 
-        best_score = np.inf
-        best_pixel = None
-
+        rugc=0
         for m in range(row_min, row_max):
             for n in range(col_min, col_max):
-
+                if rugc>max_rug:
+                    break
                 if not rugged_mask[m, n]:
                     continue
 
@@ -63,7 +63,7 @@ def extract_pairs_with_coords(
 
                 if np.isnan(fe_r) or np.isnan(mg_r) or np.isnan(al_r):
                     continue
-
+                
                 fe_diff = abs(fe_r - fe_flat) / (fe_flat + 1e-8)
                 mg_diff = abs(mg_r - mg_flat) / (mg_flat + 1e-8)
                 al_diff = abs(al_r - al_flat) / (al_flat + 1e-8)
@@ -72,30 +72,24 @@ def extract_pairs_with_coords(
                     mg_diff <= W_thresh and
                     al_diff <= W_thresh):
 
-                    score = fe_diff + mg_diff + al_diff
+                    rugged_spec = radiance_cube[:, m, n]
+                    flat_spec   = radiance_cube[:, i, j]
 
-                    if score < best_score:
-                        best_score = score
-                        best_pixel = (m, n)
-
-        if best_pixel is not None:
-            m, n = best_pixel
-
-            # spectra
-            rugged_spec = radiance_cube[:, m, n]
-            flat_spec   = radiance_cube[:, i, j]
-
-            pairs_X.append(rugged_spec)
-            pairs_Y.append(flat_spec)
+                    pairs_X.append(rugged_spec)
+                    pairs_Y.append(flat_spec)
 
             # store coordinates
-            rugged_lat_list.append(lat_map[m, n])
-            rugged_lon_list.append(lon_map[m, n])
+                    rugged_lat_list.append(lat_map[m, n])
+                    rugged_lon_list.append(lon_map[m, n])
 
-            flat_lat_list.append(lat_map[i, j])
-            flat_lon_list.append(lon_map[i, j])
+                    flat_lat_list.append(lat_map[i, j])
+                    flat_lon_list.append(lon_map[i, j])
 
-            used_rugged[m, n] = True
+                    used_rugged[m, n] = True
+                    rugc+=1
+            if rugc>max_rug:
+                break
+                   
 
     return (
         np.array(pairs_X),

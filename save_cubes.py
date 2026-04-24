@@ -45,7 +45,7 @@ def process_strips(strip):
     cube=read_qub(qub,meta,skip_bands=[(28,34),(68,75),(161,256)])
     bands,lines,sample=cube.shape
     lat,lon=interpolate_latlon(geo,lines,sample)
-    wac_norm=chop(cube,lat,lon,wac)
+    wac_norm=chop(lat,lon,wac)
     iirs_norm=cube[48,:,:]
 
     
@@ -177,7 +177,7 @@ def process_strips(strip):
               preserve_range=True,
               cval=np.nan
          )
-
+    '''
     lat_new=warp(
          lat,
          inverse_map=tform.inverse,
@@ -193,17 +193,18 @@ def process_strips(strip):
          cval=np.nan
     )
     lat_lon=np.stack([lat_new,lon_new],axis=0)
+    
     print("Lat new:",lat_new[60,60])
     print("Lon new:",lon_new[60,60])
     print("lat:",lat_new[200,100])
     print("lon:",lon_new[200,100])
-    
+    '''
    
     out_cube=extract/f"{strip.name}_aligned.npy"
-    out_coord=extract/f"{strip.name}_lat_lon.npy"
+    #out_coord=extract/f"{strip.name}_lat_lon.npy"
 
     np.save(out_cube,co_cube)
-    np.save(out_coord,lat_lon)
+    #np.save(out_coord,lat_lon)
     viewer=napari.Viewer()
     viewer.add_image(wac_norm,name="WAC",colormap="terrain")
     viewer.add_image(co_cube[48],name="Aligned IIRS",colormap="terrain")
@@ -212,7 +213,7 @@ def process_strips(strip):
     del cube
 
 for strip in strips:
-    if strip.stem == "ch2_iir_nci_20230701T1834098296_d_img_d32" or strip.stem == "ch2_iir_nci_20230707T2120194723_d_img_d32" :
+    if strip.stem == "ch2_iir_nci_20250529T1233369467_d_img_d18" or strip.stem == "ch2_iir_nci_20211218T0038037745_d_img_hw1" :
         #continue
         process_strips(strip)
 
