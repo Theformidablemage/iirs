@@ -1,6 +1,6 @@
 import numpy as np
 import rasterio
-
+from skimage.transform import resize
 
 
 def chop(lat,lon,wac):
@@ -10,13 +10,14 @@ def chop(lat,lon,wac):
     lon_rad=np.deg2rad(lon)
     xs=R*lon_rad
     ys=R*lat_rad
+  
     h,w=xs.shape
-    valid_geo= (
-        ~np.isnan(xs)&
-        ~np.isnan(ys)
-    )
-    xs=xs[valid_geo]
-    ys=ys[valid_geo]
+    #valid_geo= (
+    #    ~np.isnan(xs)&
+    #    ~np.isnan(ys)
+    #)
+    #xs=xs[valid_geo]
+    #ys=ys[valid_geo]
     with rasterio.open(wac,'r') as src:
         print("CRS",src.crs)
         rows,cols=rasterio.transform.rowcol(src.transform,xs,ys)
@@ -25,16 +26,16 @@ def chop(lat,lon,wac):
         rows=rows.reshape(xs.shape)
         cols=cols.reshape(xs.shape)
         dem_resampled=np.full((h,w),np.nan)
-        temp=np.full(xs.shape,np.nan)
+        #temp=np.full(xs.shape,np.nan)
         valid=(
             (rows>=0)&(rows<src.height)&
             (cols>=0)&(cols<src.width)
         )
-        #chopping larger wac to accomodate shift
+        
         
         dem_band=src.read(1)
-        temp[valid]=dem_band[rows[valid],cols[valid]]
-        dem_resampled[valid_geo]=temp
+        dem_resampled[valid]=dem_band[rows[valid],cols[valid]]
+        #dem_resampled[valid_geo]=temp
         print("WAC shape: ",dem_resampled.shape)
     return dem_resampled
 

@@ -4,7 +4,7 @@ def extract_pairs_with_coords(
     slope,
     Fe_map, Mg_map, Al_map,
     radiance_cube,
-    lat_map, lon_map,
+    lat_map,
     k=10,
     T_flat=5,
     T_rugged=15,
@@ -22,10 +22,13 @@ def extract_pairs_with_coords(
     pairs_Y = []
 
     rugged_lat_list = []
-    rugged_lon_list = []
+    #rugged_lon_list = []
 
-    flat_lat_list = []
-    flat_lon_list = []
+    rugged_row=[]
+    rugged_col=[]
+
+    flat_row = []
+    flat_col = []
     max_rug=50
 
     flat_indices = np.where(flat_mask)
@@ -80,10 +83,13 @@ def extract_pairs_with_coords(
 
             # store coordinates
                     rugged_lat_list.append(lat_map[m, n])
-                    rugged_lon_list.append(lon_map[m, n])
+                    #rugged_lon_list.append(lon_map[m, n])
 
-                    flat_lat_list.append(lat_map[i, j])
-                    flat_lon_list.append(lon_map[i, j])
+                    rugged_row.append(m)
+                    rugged_col.append(n)
+
+                    flat_row.append(i)
+                    flat_col.append(j)
 
                     used_rugged[m, n] = True
                     rugc+=1
@@ -95,9 +101,10 @@ def extract_pairs_with_coords(
         np.array(pairs_X),
         np.array(pairs_Y),
         np.array(rugged_lat_list),
-        np.array(rugged_lon_list),
-        np.array(flat_lat_list),
-        np.array(flat_lon_list)
+        np.array(rugged_row),
+        np.array(rugged_col),
+        np.array(flat_row),
+        np.array(flat_col)
     )
 
 
