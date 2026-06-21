@@ -63,8 +63,8 @@ header = [
 
 
 
-path=r"/home/megha/arshveer/ch2_iir_nci_20250529T1233369467_d_img_d18/miscellaneous/calibrated/20250529/ch2_iir_nci_20250529T1233369467_d_img_d18.oat"
-out=r"/home/megha/arshveer/ch2_iir_nci_20250529T1233369467_d_img_d18/miscellaneous/oat.csv"
+path=r"D:\ch2_iir_nci_20210720T2333026105_d_img_d32\miscellaneous\calibrated\20210720\ch2_iir_nci_20210720T2333026105_d_img_d32.oat"
+out=r"D:\ch2_iir_nci_20210720T2333026105_d_img_d32\miscellaneous\oat.csv"
 
 def parse_width(line,w):
     fields=[]
@@ -162,6 +162,7 @@ def quat_rotate(q, v):
 # ==========================================================
 # COORDINATE TRANSFORMS
 # ==========================================================
+
 def latlon_to_cartesian(lat_deg, lon_deg, R=LUNAR_RADIUS_KM):
     """
     Convert latitude/longitude to lunar-fixed Cartesian coordinates.
@@ -174,6 +175,7 @@ def latlon_to_cartesian(lat_deg, lon_deg, R=LUNAR_RADIUS_KM):
     z = R * np.sin(lat)
 #return statement should give array of N,3 - each row should be a vector from center of moon
     return np.column_stack((x, y, z))
+
 
 
 # ==========================================================
@@ -267,7 +269,7 @@ if __name__ == "__main__":
 
    
 
-o=r"/home/megha/arshveer/ch2_iir_nci_20250529T1233369467_d_img_d18/miscellaneous/oat_updated.csv"
+o=r"D:\ch2_iir_nci_20210720T2333026105_d_img_d32\miscellaneous\oat_updated.csv"
 
 sc=quat_rotate(quart,pos)
 #sc of size (N,3)
