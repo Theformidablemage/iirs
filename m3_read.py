@@ -36,6 +36,7 @@ with h5py.File(mat_file,'r') as f:
     plt.plot(np.sum(np.isnan(data[:,:,0]), axis=1))
     '''
 
+'''
 from scipy.io import loadmat
 import matplotlib.pyplot as plt
 import numpy as np
@@ -62,3 +63,26 @@ Fe[r,c]=np.nan
 plt.imshow(Fe,cmap="jet", vmin=0, vmax=14)
 plt.colorbar()
 plt.show()
+
+
+import spectral
+
+hdr=r"/home/megha/Downloads/iirs_strips/M3G20090209T054031_V03_LOC.HDR"
+
+data=spectral.open_image(hdr)
+print(data.shape)
+print(data[15000,:,1])
+#print(data[101,:,1])
+'''
+from geometry import interpolate_latlon
+import numpy as np
+geo=r"/home/megha/Downloads/iirs_strips/extracted/ch2_iir_nci_20230701T1441568232_d_img_n18/geometry/calibrated/20230701/ch2_iir_nci_20230701T1441568232_g_grd_n18.csv"
+
+lat,lon=interpolate_latlon(geo,12372,250)
+var=lat[:100,0]-lat[:100,-1]
+
+d=np.diff(lat[100,:])
+print(d)
+
+r=np.diff(lat[200,:])
+print(r)

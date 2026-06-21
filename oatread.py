@@ -63,8 +63,8 @@ header = [
 
 
 
-path=r"D:\ch2_iir_nci_20210720T2333026105_d_img_d32\miscellaneous\calibrated\20210720\ch2_iir_nci_20210720T2333026105_d_img_d32.oat"
-out=r"D:\ch2_iir_nci_20210720T2333026105_d_img_d32\miscellaneous\oat.csv"
+path=r"/home/megha/Downloads/iirs_strips/extracted/ch2_iir_nci_20230707T2126184264_d_img_d32/miscellaneous/calibrated/20230707/ch2_iir_nci_20230707T2126184264_d_img_d32.oat"
+out=r"/home/megha/Downloads/iirs_strips/extracted/ch2_iir_nci_20230707T2126184264_d_img_d32/miscellaneous/oat.csv"
 
 def parse_width(line,w):
     fields=[]
@@ -269,7 +269,11 @@ if __name__ == "__main__":
 
    
 
+<<<<<<< HEAD
 o=r"D:\ch2_iir_nci_20210720T2333026105_d_img_d32\miscellaneous\oat_updated.csv"
+=======
+o=r"/home/megha/Downloads/iirs_strips/extracted/ch2_iir_nci_20230707T2126184264_d_img_d32/miscellaneous/oat_updated.csv"
+>>>>>>> 1bd4b2cb1f54dcad0db143cfd80e89f0ce732798
 
 sc=quat_rotate(quart,pos)
 #sc of size (N,3)

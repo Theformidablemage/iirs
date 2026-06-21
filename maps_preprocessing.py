@@ -20,15 +20,20 @@ def lookup_map_values(map_data, lat_map, lon_map,
     # Normalize longitude
     lon_map = lon_map % 360
 
+    value_map=np.full(lat_map.shape,np.nan,dtype=float)
+    valid=~np.isnan(lat_map)&~np.isnan(lon_map)
+    lat=lat_map[valid]
+    lon=lon_map[valid]
+
     # Convert lat/lon → indices (vectorized)
-    row = (((lat_max - lat_map) / (lat_max - lat_min) )* Hm).astype(int)
-    col = (((lon_map - lon_min) / (lon_max - lon_min) )* Wm).astype(int)
+    row = (((lat_max - lat) / (lat_max - lat_min) )* Hm).astype(int)
+    col = (((lon - lon_min) / (lon_max - lon_min) )* Wm).astype(int)
 
     # Clip indices
     row = np.clip(row, 0, Hm - 1)
     col = np.clip(col, 0, Wm - 1)
 
     # Extract values
-    value_map = map_data[row, col]
-
+    value_map[valid] = map_data[row, col]
+    print(value_map.shape)
     return value_map
